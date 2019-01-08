@@ -2,8 +2,9 @@
 
 const express = require('express');
 const morgan = require('morgan');
+const mongoose = require('mongoose');
+const { PORT, MONGODB_URI } = require('./config');
 
-const { PORT } = require('./config');
 
 const notesRouter = require('./routes/notes');
 
@@ -44,6 +45,14 @@ app.use((err, req, res, next) => {
 
 // Listen for incoming connections
 if (require.main === module) {
+  //Should the below be within the if block?
+  mongoose.connect(MONGODB_URI, { useNewUrlParser:true })
+  .catch(err => {
+    console.error(`ERROR: ${err.message}`);
+    console.error('\n === Did you remember to start `mongod`? === \n');
+    console.error(err);
+  });
+  //Should the above be outside of the if block?
   app.listen(PORT, function () {
     console.info(`Server listening on ${this.address().port}`);
   }).on('error', err => {
