@@ -24,3 +24,19 @@ mongoose.connect(MONGODB_URI, { useNewUrlParser:true })
       console.error(`ERROR: ${err.message}`);
       console.error(err);
   });
+
+  mongoose.connect(MONGODB_URI, { useNewUrlParser: true })
+    .then(() => {
+        const searchId = '111111111111111111111105';
+        return Note.findById(searchId);
+    })
+    .then(results => {
+        console.log(results);
+    })
+    .then(() => {
+        return mongoose.disconnect()
+    })
+    .catch(err => {
+        console.error(`ERROR: ${err.message}`);
+        console.error(err);
+    });
