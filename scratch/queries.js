@@ -40,3 +40,25 @@ mongoose.connect(MONGODB_URI, { useNewUrlParser:true })
         console.error(`ERROR: ${err.message}`);
         console.error(err);
     });
+
+    mongoose.connect(MONGODB_URI, { useNewUrlParser: true})
+      .then(() => {
+        const newObject = new Note({
+            title: "Life is Pain",
+            content: "A Buddhist Journey by Nick"
+        });
+        const newObject2 = new Note({
+            title: "I have no content"
+        });
+          return Note.create(newObject);
+      })
+      .then(results => {
+          console.log(results);
+      })
+      .then(() => {
+          return mongoose.disconnect()
+      })
+      .catch(err => {
+          console.error(`ERROR: ${err.message}`);
+          console.error(err);
+      });
