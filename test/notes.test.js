@@ -43,6 +43,7 @@ describe('Basic Tests for Notes Database', function(){
           expect(res.body.length).to.equal(8);
         });  
     });
+
     it('Should return a single id when a specific valid id is requested', function(){
       let res; //can be accessed at multiple lower levels
       //Can we randomize this by using a findone?
@@ -116,5 +117,27 @@ describe('Basic Tests for Notes Database', function(){
         })
     })
   })
-
+  describe('PUT /api/notes/:id', function(){
+    it('Should update the item at :id and return a new item', function(){
+    let putId;
+    let res;
+    let newItem = {
+      title: "Comrade Ducky-san Saves the Day",
+      content: "A Book for Soviet-Japanese Children"
+    };
+    let randomNumber = Math.floor(Math.random() * 8);
+    let replacedItem = {};
+    return chai.request(app)
+      .get(`/api/notes`)
+      .then((_res) => {
+       res = _res;
+       return Note.findOne().skip(randomNumber);
+      })
+      .then((__res) => {
+        putId = __res.id
+        console.log(putId);
+      })
+  })
+  })
+  
 });
