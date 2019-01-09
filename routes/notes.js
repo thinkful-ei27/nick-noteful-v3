@@ -17,33 +17,37 @@ router.get('/', (req, res, next) => {
       filter.title = { $regex: searchTerm, $options: 'i' };
   }
   Note.find(filter)
-  .sort({date: -1})
+  .sort({updatedAt: 'desc'})
   .then((results) => {
     res.json(results);
   })
   .catch(err => {
-      console.error(`ERROR: ${err.message}`);
-      console.error(err);
+      next(err);
   });
 
 });
 
 /* ========== GET/READ A SINGLE ITEM ========== */
 router.get('/:id', (req, res, next) => {
-  const searchId = req.params.id;
-  Note.findById(searchId)
-  .then(results => {
-      if(results !== null){
-      res.json(results);
-      } else {
-        res.json({error: `${searchId} not found`, status: 400});
-      }
-  })
-  .catch(err => {
-      console.error(err);
-      res.json(err);
-  });
+  const { id } = req.params;
+  
+  if(!mongoose.Types.ObjectId.isValid(id)) {
+    const err = new Error(`${id} is not a valid id`);
+    err.status = 400;
+    return next(err);
+  }
 
+  Note.findById(id)
+  .then(results => {
+      if(results) {
+        res.json(results);
+      } else {
+        next();
+      }
+    })
+  .catch(err => {
+    next(err);
+  });
   // console.log('Get a Note');
   // res.json({ id: 1, title: 'Temp 1' });
 
@@ -51,22 +55,32 @@ router.get('/:id', (req, res, next) => {
 
 /* ========== POST/CREATE AN ITEM ========== */
 router.post('/', (req, res, next) => {
-  const newObject = {};
-  console.log(req.body.title);
-  console.log(req.body.content);
-  if(req.body.title){
-    newObject.title = req.body.title; 
+  const { title, content } = req.body;
+  // console.log(req.body.title);
+  // console.log(req.body.content);
+  // if(req.body.title){
+  //   newObject.title = req.body.title; 
+  // }
+  // if(req.body.content){
+  //   newObject.content = req.body.content;
+  // }
+
+  if (!title) {
+    const err = new Error('Missing `title` in request body');
+    err.status = 400;
+    return next(err);
   }
-  if(req.body.content){
-    newObject.content = req.body.content;
-  }
+
+  const newObject = { title, content };
+
   Note.create(newObject)
   .then((results) => {
-    res.json(results);
+    res.location(`${req.originalUrl}/${result.id}`)
+      .status(201)
+      .json(results);
   })
   .catch(err => {
-    console.error(`ERROR: ${err.message}`);
-    console.error(err);
+    next(err);
   });
 
   
@@ -103,13 +117,28 @@ const updateId = req.params.id;
 const {title, content} = req.body;
 const updatedObject = {title, content};
 
+if(!mongoose.Types.ObjectId.isValid(updateId)) {
+  const err = new Error(`${updateId} is not a valid id`);
+  err.status = 400;
+  return next(err);
+}
+
+if(!title) {
+  const err = new Error('Missing `title` in the request body');
+  err.status = 400;
+  return next(err);
+}
+
 Note.findByIdAndUpdate(updateId, updatedObject, {upsert: true, new: true})
   .then((results) => {
-    res.json(results);
+    if(results) {
+      res.json(results);
+    } else {
+      next();
+    }
   })
   .catch(err => {
-    console.error(`ERROR: ${err.message}`);
-    console.error(err);
+    next(err);
   });
 
   //       mongoose.connect(MONGODB_URI, { useNewUrlParser: true})
@@ -140,13 +169,19 @@ Note.findByIdAndUpdate(updateId, updatedObject, {upsert: true, new: true})
 /* ========== DELETE/REMOVE A SINGLE ITEM ========== */
 router.delete('/:id', (req, res, next) => {
   const deleteId = req.params.id;
+
+  if(!mongoose.Types.ObjectId.isValid(deleteId)) {
+    const err = new Error(`${deleteId} is not a valid id`);
+    err.status = 400;
+    return next(err);
+  }
+
   Note.findByIdAndDelete(deleteId)
     .then((results => {
-      res.sendStatus(204);
+      res.sendStatus(204).end();
     }))
     .catch(err => {
-      console.error(`ERROR: ${err.message}`);
-      console.error(err);
+      next(err);
     })
 
   //     mongoose.connect(MONGODB_URI, { useNewUrlParser: true})
