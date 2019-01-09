@@ -46,5 +46,35 @@ describe('Basic Tests for Notes Database', function(){
           expect(res.body.length).to.equal(8);
         });  
     });
+    it('Should return a single id when a specific valid id is requested', function(){
+      let res; //can be accessed at multiple lower levels
+      //Can we randomize this by using a findone?
+      let searchId = "111111111111111111111108";
+      let resultTitle = '10 ways marketers are making you addicted to dogs';
+      return chai.request(app)
+        .get(`/api/notes/${searchId}`)
+        .then(function(_res){
+          res = _res;
+          console.log(res);
+          expect(res).to.have.status(200);
+          expect(res).to.be.json;
+          expect(res.body).to.be.an('object');
+          expect(res.body.id).to.equal(searchId);
+          expect(res.body.title).to.equal(resultTitle);
+        })
+    })
+    it('Should return an error when a non-valid id is requested', function(){
+      let res;
+      let searchId = Math.random() *50000 ;
+      return chai.request(app)
+        .get(`/api/notes/${searchId}`)
+          .then(function(_res){
+            res = _res;
+            console.log(res);
+            expect(res).to.have.status(400);
+            expect(res).to.be.json;
+            expect(res.body.message).to.equal(`${searchId} is not a valid id`);
+          })
+    })
   });
 });
