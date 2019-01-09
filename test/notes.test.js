@@ -7,6 +7,7 @@ const { TEST_MONGODB_URI } = require('../config');
 const Note = require('../models/note');
 const { notes } = require('../db/data');
 const expect = chai.expect;
+const faker = require('faker');
 chai.use(chaiHttp);
 
 
@@ -76,8 +77,8 @@ describe('Basic Tests for Notes Database', function(){
   describe('POST /api/notes', function(){
     it('Should create and return a new item when provided correct data', function(){
       const newItem = {
-        title: "How I Learned To Stop Worrying",
-        content: "And Love Comrade Ducky-san"
+        title: faker.random.word(),
+        content: faker.random.words()
       };
       let res;
       return chai.request(app)
@@ -102,7 +103,7 @@ describe('Basic Tests for Notes Database', function(){
     })
     it('Should return an error if new item lacks title', function(){
       const newItem = {
-        content: "Oh, no! I'm lacking a title"
+        content: faker.random.words()
       };
       let res;
       return chai.request(app)
@@ -122,11 +123,10 @@ describe('Basic Tests for Notes Database', function(){
     let putId;
     let res;
     let newItem = {
-      title: "Comrade Ducky-san Saves the Day",
-      content: "A Book for Soviet-Japanese Children"
+      title: faker.random.word(),
+      content: faker.random.words()
     };
     let randomNumber = Math.floor(Math.random() * 8);
-    let replacedItem = {};
     return chai.request(app)
       .get(`/api/notes`)
       .then((_res) => {
@@ -135,9 +135,78 @@ describe('Basic Tests for Notes Database', function(){
       })
       .then((__res) => {
         putId = __res.id
-        console.log(putId);
+        return chai.request(app)
+          .put(`/api/notes/${putId}`)
+          .send(newItem)
+          .then((___res) => {
+            res = ___res;
+            expect(res).to.be.json;
+            expect(res).to.have.status(200);
+            expect(res.body).to.be.an('object');
+            expect(res.body.title).to.equal(newItem.title);
+            expect(res.body.content).to.equal(newItem.content);
+            return res.body;
+          })
       })
+      .then((___res) => {
+        res = ___res;
+        return chai.request(app)
+        .get(`/api/notes/${putId}`)
+        .then((returnedItem) => {
+          expect(returnedItem).to.be.json;
+          expect(returnedItem).to.have.status(200);
+          expect(returnedItem.body).to.be.an('object');
+          expect(returnedItem.body.title).to.equal(res.title);
+          expect(returnedItem.body.content).to.equal(res.content);
+          expect(String(new Date(returnedItem.body.createdAt))).to.equal(String(Date(res.createdAt)));
+          expect(String(new Date(returnedItem.body.updatedAt))).to.equal(String(Date(res.updatedAt)));
+        })
+      })
+    })
+    it('Should return an error if the id does not exist', function(){
+      let fakeId = 500000
+      let newItem = {
+        title: faker.random.word(),
+        content: faker.random.words()
+      };
+      return chai.request(app)
+        .put(`/api/notes/${fakeId}`)
+        .send(newItem)
+        .then((res) => {
+          expect(res).to.be.json;
+          expect(res).to.have.status(400);
+          expect(res.body.message).to.equal(`${fakeId} is not a valid id`)
+        })
+    })
   })
+
+  describe('DELETE /api/notes:id', function(){
+    it('Should delete the note with the id', function(){
+      let deleteId;
+      let randomNumber = Math.floor(Math.random() * 8);
+      return chai.request(app)
+        .get(`/api/notes`)
+        .then((res) => {
+         return Note.findOne().skip(randomNumber);
+      })
+        .then((res) => {
+          deleteId = res.id;
+          return chai.request(app)
+            .delete(`/api/notes/${deleteId}`)
+            .then((res) => {
+              expect(res).to.have.status(204);
+            })
+        })
+        .then(() => {
+          return chai.request(app)
+            .get(`/api/notes/${deleteId}`)
+            .then((res) => {
+            expect(res).to.have.status(404);
+            expect(res).to.be.json;
+            expect(res.body.message).to.equal(`Not Found`);
+          })
+        })
+    })
   })
   
 });
