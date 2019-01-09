@@ -9,7 +9,6 @@ const { notes } = require('../db/data');
 const expect = chai.expect;
 chai.use(chaiHttp);
 
-console.log(TEST_MONGODB_URI);
 
 describe('Basic Tests for Notes Database', function(){
   before(function () {
@@ -17,7 +16,6 @@ describe('Basic Tests for Notes Database', function(){
       .then(() => mongoose.connection.db.dropDatabase());
   });
 
-  console.log(TEST_MONGODB_URI);
   beforeEach(function () {
     return Note.insertMany(notes);
   });
@@ -29,8 +27,7 @@ describe('Basic Tests for Notes Database', function(){
   after(function() {
     return mongoose.disconnect();
   });
-//   console.log(TEST_MONGODB_URI);
-//   console.log(notes);
+
   describe('GET /api/notes', function() {
     it('Should return all the notes within the database when requested', function (){
       let res; //can be accessed at multiple lower levels
@@ -55,7 +52,6 @@ describe('Basic Tests for Notes Database', function(){
         .get(`/api/notes/${searchId}`)
         .then(function(_res){
           res = _res;
-          console.log(res);
           expect(res).to.have.status(200);
           expect(res).to.be.json;
           expect(res.body).to.be.an('object');
@@ -65,16 +61,60 @@ describe('Basic Tests for Notes Database', function(){
     })
     it('Should return an error when a non-valid id is requested', function(){
       let res;
-      let searchId = Math.random() *50000 ;
+      let searchId = Math.random() * 50000 ;
       return chai.request(app)
         .get(`/api/notes/${searchId}`)
           .then(function(_res){
             res = _res;
-            console.log(res);
             expect(res).to.have.status(400);
             expect(res).to.be.json;
             expect(res.body.message).to.equal(`${searchId} is not a valid id`);
           })
     })
   });
+  describe('POST /api/notes', function(){
+    it('Should create and return a new item when provided correct data', function(){
+      const newItem = {
+        title: "How I Learned To Stop Worrying",
+        content: "And Love Comrade Ducky-san"
+      };
+      let res;
+      return chai.request(app)
+        .post(`/api/notes`)
+        .send(newItem)
+        .then((_res) => {
+          res = _res;
+          expect(res).to.be.json;
+          expect(res).to.have.status(201);
+          expect(res.body).to.be.an('object');
+          expect(res.body.title).to.equal(newItem.title);
+          expect(res.body.content).to.equal(newItem.content);
+          return Note.findById(res.body.id);
+        })
+        .then(foundData => {
+          expect(res.body.title).to.equal(foundData.title);
+          expect(res.body.id).to.equal(foundData.id);
+          expect(res.body.content).to.equal(foundData.content);
+          expect(String(new Date(res.body.createdAt))).to.equal(String(foundData.createdAt));
+          expect(String(new Date(res.body.updatedAt))).to.equal(String(foundData.updatedAt));
+        })
+    })
+    it('Should return an error if new item lacks title', function(){
+      const newItem = {
+        content: "Oh, no! I'm lacking a title"
+      };
+      let res;
+      return chai.request(app)
+        .post(`/api/notes`)
+        .send(newItem)
+        .then((_res) => {
+          res = _res;
+          expect(res).to.be.json;
+          expect(res).to.have.status(400);
+          expect(res.body).to.be.an('object');
+          expect(res.body.message).to.equal('Missing `title` in request body');
+        })
+    })
+  })
+
 });

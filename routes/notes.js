@@ -75,7 +75,7 @@ router.post('/', (req, res, next) => {
 
   Note.create(newObject)
   .then((results) => {
-    res.location(`${req.originalUrl}/${result.id}`)
+    res.location(`${req.originalUrl}/${results.id}`)
       .status(201)
       .json(results);
   })
