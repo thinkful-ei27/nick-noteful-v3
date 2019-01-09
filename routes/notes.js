@@ -27,7 +27,7 @@ router.get('/', (req, res, next) => {
 
 });
 
-//Comment to make Travis work.
+//Comment to make Travis WORK
 
 /* ========== GET/READ A SINGLE ITEM ========== */
 router.get('/:id', (req, res, next) => {
