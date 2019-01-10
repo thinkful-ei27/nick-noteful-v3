@@ -69,9 +69,49 @@ router.post('/', (req, res, next) => {
           .json(result);
       })
       .catch(err => {
-          next(err);
+        if (err.code === 11000) {
+            err = new Error('The folder name already exists');
+            err.status = 400;
+          }
+        next(err);
       });
 });
+
+//Put (update) a folder
+router.put('/:id', (req, res, next) => {
+    const { id } = req.params;
+    const { name } = req.body;
+
+    if(!mongoose.Types.ObjectId.isValid(id)) {
+        const err = new Error(`${id} is not a valid id`);
+        err.status = 400;
+        return next(err);
+    }
+   
+    if(!name) {
+        const err = new Error(`Missing name in request body`);
+        err.status = 400;
+        return next(err);
+    }
+
+    const updateFolder = { name };
+
+    Folder.findByIdAndUpdate(id, updateFolder, {new: true})
+      .then(result => {
+          if(result){
+              res.json(result);
+          } else {
+            next();
+          }
+      })
+      .catch(err => {
+        if (err.code === 11000) {
+            err = new Error('The folder name already exists');
+            err.status = 400;
+        }
+        next(err);
+      })
+})
 
 //Delete a folder
 router.delete('/:id', (req, res, next)=> {
