@@ -15,7 +15,7 @@ describe('Basic Tests for Notes Database', function(){
   // before(function () {
   //   return mongoose.connect(TEST_MONGODB_URI)
   //     .then(() => mongoose.connection.db.dropDatabase());
-  // });
+  // }); Notice me
   
   before(function(){
   return mongoose.connect(TEST_MONGODB_URI,{useNewUrlParser:true})
