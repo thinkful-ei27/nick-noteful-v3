@@ -1,11 +1,13 @@
 const mongoose = require('mongoose');
 
 const folderSchema = mongoose.Schema({
-    name: {Type: String, Required: true, Unique: true}
+    name: {type: String, required: true, unique: true}
 }, {timestamps: true});
 
 // folderSchema.set('timestamps', true); This works, but won't set initially
 
+//Within Mongo, currently returning __v and _id with .find()
+//Potential solution (hide from ALL queries): __v: {select: false}
 folderSchema.set('toJson', {
     virtuals: true,
     versionKey: false,
