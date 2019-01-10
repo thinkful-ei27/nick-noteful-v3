@@ -12,9 +12,14 @@ chai.use(chaiHttp);
 
 
 describe('Basic Tests for Notes Database', function(){
-  before(function () {
-    return mongoose.connect(TEST_MONGODB_URI)
-      .then(() => mongoose.connection.db.dropDatabase());
+  // before(function () {
+  //   return mongoose.connect(TEST_MONGODB_URI)
+  //     .then(() => mongoose.connection.db.dropDatabase());
+  // });
+  
+  before(function(){
+  return mongoose.connect(TEST_MONGODB_URI,{useNewUrlParser:true})
+  .then(()=>mongoose.connection.db.dropDatabase());
   });
 
   beforeEach(function () {
