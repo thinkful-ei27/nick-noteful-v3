@@ -42,6 +42,7 @@ router.get('/', (req, res, next) => {
   }
 
   Note.find(filter)
+    .populate('tags')
     .sort({ updatedAt: 'desc' })
     .then(results => {
       res.json(results);
@@ -63,6 +64,7 @@ router.get('/:id', (req, res, next) => {
   }
 
   Note.findById(id)
+    .populate('tags')
     .then(result => {
       if (result) {
         res.json(result);
@@ -92,8 +94,7 @@ router.post('/', (req, res, next) => {
     return next(err);
   }
 
-  
-
+  //If we can assure that all passed tags are arrays, we can simplify this
   if(tags){
     if(Array.isArray(tags)){
     tags.forEach(tag => {
@@ -128,7 +129,7 @@ router.post('/', (req, res, next) => {
 /* ========== PUT/UPDATE A SINGLE ITEM ========== */
 router.put('/:id', (req, res, next) => {
   const { id } = req.params;
-  const { title, content, folderId } = req.body;
+  const { title, content, folderId, tags } = req.body;
 
   /***** Never trust users - validate input *****/
   if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -149,7 +150,26 @@ router.put('/:id', (req, res, next) => {
     return next(err);
   }
 
-  const updateNote = { title, content };
+  if(tags){
+    if(Array.isArray(tags)){
+    tags.forEach(tag => {
+      if(!mongoose.Types.ObjectId.isValid(tag)){
+        const err = new Error(`${tag} is not a valid id`);
+        err.status = 400;
+        return next(err);
+      }
+    });
+    } else {
+      if(!mongoose.Types.ObjectId.isValid(tags)){
+          const err = new Error(`${tags} is not a valid id`);
+          err.status = 400;
+          return next(err);
+      }
+    }
+  }
+
+
+  const updateNote = { title, content, folderId, tags };
 
   Note.findByIdAndUpdate(id, updateNote, { new: true })
     .then(result => {

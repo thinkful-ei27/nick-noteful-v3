@@ -16,6 +16,7 @@ router.get('/', (req, res, next) => {
         filter.name = { $regex: searchTerm, $options: 'i'};
     }
     
+    
     Tag.find(filter)
       .sort({updatedAt: 'desc'})
       .then((results) => {
