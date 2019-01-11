@@ -38,7 +38,11 @@ router.get('/:id', (req, res, next) => {
 
     Tag.findById(id)
       .then((results) => {
+          if(results === null){
+              next();
+          } else {
           res.json(results);
+          }
       })
       .catch((err) => {
           next(err);
@@ -92,7 +96,9 @@ router.put('/:id', (req, res, next) => {
 
     Tag.findByIdAndUpdate(id, updatedTag, {new: true})
       .then(result => {
-          if(result){
+          if(result === null){
+            next(); 
+          }else if(result){
               res.json(result);
           } else {
               next();
