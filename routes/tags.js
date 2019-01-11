@@ -72,6 +72,41 @@ router.post('/', (req, res, next) => {
 });
 
 //PUT tag for updating by id
+router.put('/:id', (req, res, next) => {
+    const { id } = req.params;
+    const { name } = req.body;
+
+    if(!mongoose.Types.ObjectId.isValid(id)) {
+        const err = new Error(`${id} is not a valid id`);
+        err.status = 400;
+        return next(err);
+    }
+
+    if(!name){
+        const err = new Error(`Missing 'name' in request body`);
+        err.status = 400;
+        return next(err);
+    }
+
+    const updatedTag = { name };
+
+    Tag.findByIdAndUpdate(id, updatedTag, {new: true})
+      .then(result => {
+          if(result){
+              res.json(result);
+          } else {
+              next();
+          }
+      })
+      .catch(err => {
+          if(err.code === 11000) {
+              err = new Error('The tag name already exists');
+              err.status = 400;
+          }
+          next(err);
+      });
+});
+
 
 
 module.exports = router;
