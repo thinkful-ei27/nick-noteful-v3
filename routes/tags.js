@@ -32,7 +32,7 @@ router.get('/:id', (req, res, next) => {
     const { id } = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-        const err = new Error('The `id` is not valid');
+        const err = new Error(`${id} is not a valid id`);
         err.status = 400;
         return next(err);
     }
@@ -55,7 +55,8 @@ router.post('/', (req, res, next) => {
     const { name } = req.body;
 
     if(!name){
-        const err = new Error(`Missing 'name' in request body`);
+        const err = new Error(`Missing name in request body`);
+        err.status = 400;
         return next(err);
     }
 
@@ -88,7 +89,7 @@ router.put('/:id', (req, res, next) => {
     }
 
     if(!name){
-        const err = new Error(`Missing 'name' in request body`);
+        const err = new Error(`Missing name in request body`);
         err.status = 400;
         return next(err);
     }
