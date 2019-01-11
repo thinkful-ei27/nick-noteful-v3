@@ -13,7 +13,7 @@ router.get('/', (req, res, next) => {
   let filter = {};
   
   if(searchTerm){
-      filter.name = {$regexp: searchTerm, $options: 'i'};
+      filter.name = { $regex: searchTerm, $options: 'i'};
   }
 
   Folder.find(filter)
