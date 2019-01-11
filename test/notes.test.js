@@ -25,7 +25,8 @@ describe('Noteful API - Notes', function () {
   beforeEach(function () {
     return Promise.all([
       Note.insertMany(notes),
-      Folder.insertMany(folders)
+      Folder.insertMany(folders),
+      Tag.insertMany(tags)
     ])
       .then(() => {
         return Note.createIndexes();
