@@ -243,7 +243,33 @@ describe('Noteful API - Folders', function() {
         });
 
         it('should respond with a 404 for an id that does not exist', function(){
+          const updatedFolder = {
+              'name': 'Sad Times'
+          };
+          return chai.request(app)
+            .put(`/api/folders/DOESNOTEXIST`)
+            .send(updatedFolder)
+            .then(res => {
+              expect(res).to.have.status(404);
+            });
+        });
 
+        it('should return an error when missing "name" field', function() {
+          const updatedFolder = {};
+          let data;
+          return Folder.findOne()
+            .then(_data => {
+              data = _data;
+              return chai.request(app)
+                .put(`/api/folders/${data.id}`)
+                .send(updatedFolder);
+            })
+            .then(res => {
+              expect(res).to.have.status(400);
+              expect(res).to.be.json;
+              expect(res.body).to.be.an('object');
+              expect(res.body.message).to.equal('Missing name in request body');
+            });
         });
     });
 
