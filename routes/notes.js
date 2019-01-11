@@ -91,14 +91,11 @@ router.post('/', (req, res, next) => {
     err.status = 400;
     return next(err);
   }
-  //If we will allow multiple tags, we might need a forEach loop
-  // if (tags && !mongoose.Types.ObjectId.isValid(tags)) {
-  //   const err = new Error(`${tags} is not a valid id`);
-  //   err.status = 400;
-  //   return next(err);
-  // }
+
+  
 
   if(tags){
+    if(Array.isArray(tags)){
     tags.forEach(tag => {
       if(!mongoose.Types.ObjectId.isValid(tag)){
         const err = new Error(`${tag} is not a valid id`);
@@ -106,6 +103,13 @@ router.post('/', (req, res, next) => {
         return next(err);
       }
     });
+    } else {
+      if(!mongoose.Types.ObjectId.isValid(tags)){
+          const err = new Error(`${tags} is not a valid id`);
+          err.status = 400;
+          return next(err);
+      }
+    }
   }
 
   const newNote = { title, content, folderId, tags };
