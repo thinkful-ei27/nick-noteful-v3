@@ -30,7 +30,11 @@ describe('Noteful API - Notes', function () {
       Tag.insertMany(tags)
     ])
       .then(() => {
-        return Note.createIndexes();
+        return Promise.all([
+          Note.createIndexes(),
+          Folder.createIndexes(),
+          Tag.createIndexes()
+        ])
       })
   });
 
@@ -73,6 +77,13 @@ describe('Noteful API - Notes', function () {
             expect(item.id).to.equal(data[i].id);
             expect(item.title).to.equal(data[i].title);
             expect(item.content).to.equal(data[i].content);
+            item.tags.forEach(function(tag, j) {
+              let test = String(data[i].tags[j]);
+              console.log(`tag.id is ${tag.id}`);
+              console.log(`test is   ${test}`);
+              expect(tag.id).to.equal(test);
+            });
+            // expect(item.tags.id).to.equal(data[i].tags);
             expect(new Date(item.createdAt)).to.deep.equal(data[i].createdAt);
             expect(new Date(item.updatedAt)).to.deep.equal(data[i].updatedAt);
           });

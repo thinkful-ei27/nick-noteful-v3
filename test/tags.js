@@ -67,8 +67,6 @@ describe('Noteful API - Tags', function() {
                 })
           ])
             .then(([data, res]) => {
-                console.log(data);
-                console.log(res.body);
                 expect(res).to.have.status(200);
                 expect(res).to.be.json;
                 expect(res.body).to.be.an('array');
