@@ -13,7 +13,7 @@ folderSchema.set('toJSON', {
     versionKey: false,
     transform: (doc, result) => {
         delete result._id;
-        // delete result.__v;
+        delete result.__v;
     }
 });
 
