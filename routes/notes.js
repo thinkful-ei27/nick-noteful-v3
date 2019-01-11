@@ -9,7 +9,7 @@ const router = express.Router();
 
 /* ========== GET/READ ALL ITEMS ========== */
 router.get('/', (req, res, next) => {
-  const { searchTerm, folderId } = req.query;
+  const { searchTerm, folderId, tagId } = req.query;
   let filter = {};
 
   if (searchTerm) {
@@ -22,6 +22,23 @@ router.get('/', (req, res, next) => {
 
   if(folderId) {
     filter.folderId = folderId;
+  }
+
+  if(folderId && !mongoose.Types.ObjectId.isValid(folderId)){
+    const err = new Error(`${folderId} is not a valid id`);
+    err.status = 400;
+    return next(err);
+  }
+
+  if(tagId) {
+    filter.tags = tagId;
+  }
+
+  if(tagId && !mongoose.Types.ObjectId.isValid(tagId)){
+    const err = new Error(`${tagId} is not a valid id`);
+    err.status = 400;
+    return next(err);
+
   }
 
   Note.find(filter)
