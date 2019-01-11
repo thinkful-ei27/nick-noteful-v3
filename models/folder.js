@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const folderSchema = mongoose.Schema({
+const folderSchema = new mongoose.Schema({
     name: { type: String, required: true, unique: true }
 }, {timestamps: true});
 
