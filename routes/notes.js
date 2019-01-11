@@ -77,7 +77,7 @@ router.get('/:id', (req, res, next) => {
 
 /* ========== POST/CREATE AN ITEM ========== */
 router.post('/', (req, res, next) => {
-  const { title, content, folderId } = req.body;
+  const { title, content, folderId, tags } = req.body;
 
   /***** Never trust users - validate input *****/
   if (!title) {
@@ -91,9 +91,25 @@ router.post('/', (req, res, next) => {
     err.status = 400;
     return next(err);
   }
+  //If we will allow multiple tags, we might need a forEach loop
+  // if (tags && !mongoose.Types.ObjectId.isValid(tags)) {
+  //   const err = new Error(`${tags} is not a valid id`);
+  //   err.status = 400;
+  //   return next(err);
+  // }
 
-  const newNote = { title, content, folderId };
+  if(tags){
+    tags.forEach(tag => {
+      if(!mongoose.Types.ObjectId.isValid(tag)){
+        const err = new Error(`${tag} is not a valid id`);
+        err.status = 400;
+        return next(err);
+      }
+    });
+  }
 
+  const newNote = { title, content, folderId, tags };
+  console.log(newNote);
   Note.create(newNote)
     .then(result => {
       res.location(`${req.originalUrl}/${result.id}`)
