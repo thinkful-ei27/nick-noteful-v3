@@ -197,6 +197,54 @@ describe('Noteful API - Folders', function() {
             });
         });
     });
+    
+    describe('PUT /api/folders/:id', function() {
 
+        it('should update the note when provided valid data', function() {
+            const updatedItem = {
+                'name': 'Unique Name'
+            };
+            let res, original;
+            return Folder.findOne()
+              .then(_original => {
+                  original = _original;
+                  return chai.request(app)
+                    .put(`/api/folders/${original.id}`)
+                    .send(updatedItem);
+              })
+              .then(function (_res) {
+                  res = _res;
+                  expect(res).to.have.status(200);
+                  expect(res).to.be.json;
+                  expect(res.body).to.be.an('object');
+                  expect(res.body).to.have.all.keys('id', 'createdAt', 'updatedAt', 'name');
+                  return Folder.findById(res.body.id);
+              })
+              .then(data => {
+                  expect(res.body.name).to.equal(data.name);
+                  expect(new Date(res.body.createdAt)).to.deep.equal(data.createdAt);
+                  expect(new Date(res.body.updatedAt)).to.deep.equal(data.updatedAt);
+                  expect(new Date(res.body.updatedAt)).to.greaterThan(original.updatedAt);
+              });
+        });
+
+        it('should respond with status 400 and an error message when `id` is not valid', function() {
+            const updatedFolder = {
+                'name': 'Happy Times'
+            };
+            let id = `NOT-A-VALID-ID`;
+            return chai.request(app)
+              .put(`/api/folders/${id}`)
+              .send(updatedFolder)
+              .then(res => {
+                  expect(res).to.have.status(400);
+                  expect(res.body.message).to.equal(`${id} is not a valid id`);
+              });
+        });
+
+        it('should respond with a 404 for an id that does not exist', function(){
+
+        });
+    });
 
 });
