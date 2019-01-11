@@ -8,8 +8,9 @@ const app = require('../server');
 const { TEST_MONGODB_URI } = require('../config');
 
 const Note = require('../models/note');
+const Folder = require('../models/folder')
+const { notes, folders } = require('../db/data');
 
-const { notes } = require('../db/data');
 
 const expect = chai.expect;
 chai.use(chaiHttp);
@@ -22,7 +23,13 @@ describe('Noteful API - Notes', function () {
   });
 
   beforeEach(function () {
-    return Note.insertMany(notes);
+    return Promise.all([
+      Note.insertMany(notes),
+      Folder.insertMany(folders)
+    ])
+      .then(() => {
+        return Note.createIndexes();
+      })
   });
 
   afterEach(function () {
@@ -242,12 +249,13 @@ describe('Noteful API - Notes', function () {
         'title': 'What about dogs?!',
         'content': 'woof woof'
       };
+      const id = `NOT-A-VALID-ID`;
       return chai.request(app)
-        .put('/api/notes/NOT-A-VALID-ID')
+        .put(`/api/notes/${id}`)
         .send(updateItem)
         .then(res => {
           expect(res).to.have.status(400);
-          expect(res.body.message).to.eq('The `id` is not valid');
+          expect(res.body.message).to.eq(`${id} is not a valid id`);
         });
     });
 

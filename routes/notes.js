@@ -9,8 +9,7 @@ const router = express.Router();
 
 /* ========== GET/READ ALL ITEMS ========== */
 router.get('/', (req, res, next) => {
-  const { searchTerm } = req.query;
-
+  const { searchTerm, folderId } = req.query;
   let filter = {};
 
   if (searchTerm) {
@@ -19,6 +18,10 @@ router.get('/', (req, res, next) => {
     // Mini-Challenge: Search both `title` and `content`
     // const re = new RegExp(searchTerm, 'i');
     // filter.$or = [{ 'title': re }, { 'content': re }];
+  }
+
+  if(folderId) {
+    filter.folderId = folderId;
   }
 
   Note.find(filter)
@@ -57,7 +60,7 @@ router.get('/:id', (req, res, next) => {
 
 /* ========== POST/CREATE AN ITEM ========== */
 router.post('/', (req, res, next) => {
-  const { title, content } = req.body;
+  const { title, content, folderId } = req.body;
 
   /***** Never trust users - validate input *****/
   if (!title) {
@@ -66,7 +69,13 @@ router.post('/', (req, res, next) => {
     return next(err);
   }
 
-  const newNote = { title, content };
+  if (folderId && !mongoose.Types.ObjectId.isValid(folderId)) {
+    const err = new Error(`${folderId} is not a valid id`);
+    err.status = 400;
+    return next(err);
+  }
+
+  const newNote = { title, content, folderId };
 
   Note.create(newNote)
     .then(result => {
@@ -82,17 +91,23 @@ router.post('/', (req, res, next) => {
 /* ========== PUT/UPDATE A SINGLE ITEM ========== */
 router.put('/:id', (req, res, next) => {
   const { id } = req.params;
-  const { title, content } = req.body;
+  const { title, content, folderId } = req.body;
 
   /***** Never trust users - validate input *****/
   if (!mongoose.Types.ObjectId.isValid(id)) {
-    const err = new Error('The `id` is not valid');
+    const err = new Error(`${id} is not a valid id`);
     err.status = 400;
     return next(err);
   }
 
   if (!title) {
     const err = new Error('Missing `title` in request body');
+    err.status = 400;
+    return next(err);
+  }
+
+  if (folderId && !mongoose.Types.ObjectId.isValid(folderId)) {
+    const err = new Error('The `folderId` is not valid');
     err.status = 400;
     return next(err);
   }
