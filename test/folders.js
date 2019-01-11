@@ -273,4 +273,21 @@ describe('Noteful API - Folders', function() {
         });
     });
 
+    describe('DELETE /api/folders/:id', function() {
+        it('should delete an existing folder and respond with 204', function(){
+          let data;
+          return Folder.findOne()
+            .then(_data => {
+              data = _data;
+              return chai.request(app).delete(`/api/folders/${data.id}`);
+            })
+            .then(function (res) {
+              expect(res).to.have.status(204);
+              return Folder.countDocuments({ _id: data.id});
+            })
+            .then(count => {
+              expect(count).to.equal(0);
+            });
+        });
+    });
 });
